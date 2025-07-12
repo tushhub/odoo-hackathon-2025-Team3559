@@ -1,0 +1,101 @@
+﻿@model StackIt.Models.Question
+
+@{
+    ViewBag.Title = "Question Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>@Model.Title</h2>
+
+<div class="mb-4">
+    <p>@Html.Raw(Model.Description)</p>
+    <p>
+        <strong>Tags:</strong>
+        @foreach (var tag in Model.QuestionTags.Select(qt => qt.Tag))
+        {
+            <span class="badge bg-primary me-1">@tag.Name</span>
+        }
+    </p>
+    <small>
+        Asked by <strong>@Model.User.UserName</strong>
+        on @Model.CreatedAt.ToString("dd MMM yyyy hh:mm tt")
+    </small>
+</div>
+
+<hr />
+
+<h4>@Model.Answers.Count Answer(s)</h4>
+
+<div id="answer-section">
+    @Html.Partial("~/Views/Answer/_AnswerListPartial.cshtml", (List<StackIt.Models.Answer>)Model.Answers.OrderByDescending(a => a.CreatedAt).ToList())
+</div>
+
+<hr />
+
+@if (User.Identity.IsAuthenticated)
+{
+    <h4>Your Answer</h4>
+
+    <form id="answerForm">
+        @Html.AntiForgeryToken()
+        @Html.Hidden("QuestionId", Model.Id)
+
+        <div id="editor" style="height: 200px;"></div>
+        <input type="hidden" name="Content" id="Content" />
+
+        <br />
+        <button type="submit" class="btn btn-success">Post Answer</button>
+    </form>
+
+    <div id="answerResult" class="mt-2"></div>
+
+    <!-- ✅ jQuery required for AJAX -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- ✅ Quill -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet" />
+
+    <script>
+        var quill = new Quill('#editor', {
+            theme: 'snow',
+            placeholder: 'Write your answer here...',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    [{ 'align': [] }],
+                    ['clean']
+                ]
+            }
+        });
+
+        document.getElementById('answerForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            document.getElementById('Content').value = quill.root.innerHTML;
+
+            const formData = $(this).serialize();
+
+            $.ajax({
+                url: '@Url.Action("CreateAjax", "Answer")',
+                type: 'POST',
+                data: formData,
+                success: function (html) {
+                    $('#answer-section').html(html);
+                    quill.root.innerHTML = '';
+                    $('#answerResult').text('Answer posted successfully!').removeClass('text-danger').addClass('text-success');
+                },
+                error: function () {
+                    $('#answerResult').text('Something went wrong. Please try again.').removeClass('text-success').addClass('text-danger');
+                }
+            });
+        });
+    </script>
+}
+else
+{
+    <p>
+        <a href="@Url.Action("Login", "Account")">Log in</a> to post an answer.
+    </p>
+}

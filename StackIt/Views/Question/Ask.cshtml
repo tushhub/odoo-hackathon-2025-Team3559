@@ -1,0 +1,53 @@
+﻿@model StackIt.ViewModels.AskQuestionViewModel
+@{
+    ViewBag.Title = "Ask a Question";
+}
+
+<!-- Quill Styles -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet" />
+
+<h2>Ask a Question</h2>
+
+@using (Html.BeginForm("AskQuestion", "Question", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Title)
+        @Html.TextBoxFor(m => m.Title, new { @class = "form-control", placeholder = "Enter your question title" })
+    </div>
+
+    <div class="form-group">
+        @Html.Label("Description")
+        <div id="editor" style="height: 200px; background-color: white;"></div>
+        <input type="hidden" name="Description" />
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.SelectedTagIds, "Tags")
+        @Html.ListBoxFor(m => m.SelectedTagIds, Model.TagsList, new { @class = "form-control", multiple = "multiple", id = "SelectedTagIds" })
+    </div>
+
+    <br />
+    <button type="submit" class="btn btn-primary">Post Question</button>
+}
+
+<!-- Quill Script -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+    var quill = new Quill('#editor', {
+        theme: 'snow',
+        placeholder: 'Describe your question here...',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                ['link', 'image']
+            ]
+        }
+    });
+
+    $('form').on('submit', function () {
+        $('input[name=Description]').val(quill.root.innerHTML);
+    });
+</script>

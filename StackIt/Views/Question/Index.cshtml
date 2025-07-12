@@ -1,0 +1,28 @@
+﻿@model List<StackIt.Models.Question>
+@{
+    ViewBag.Title = "All Questions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>All Questions</h2>
+
+@foreach (var q in Model)
+{
+    <div class="card mb-3 p-3">
+        <h4>
+            <a href="@Url.Action("Details", "Question", new { id = q.Id })">
+                @q.Title
+            </a>
+        </h4>
+        <p>@q.Description.Substring(0, Math.Min(100, q.Description.Length))...</p>
+        <p>
+            <strong>Tags:</strong>
+            @foreach (var tag in q.QuestionTags.Select(qt => qt.Tag))
+            {
+                <span class="badge bg-info">@tag.Name</span>
+            }
+        </p>
+        <p><strong>Answers:</strong> @q.Answers.Count</p>
+        <small>Asked by @q.User.UserName on @q.CreatedAt.ToString("dd MMM yyyy hh:mm tt")</small>
+    </div>
+}

@@ -1,0 +1,16 @@
+﻿
+@model List<StackIt.Models.Notification>
+
+
+@if (Model != null && Model.Any())
+{
+    foreach (var n in Model)
+    {
+        <li>@n.Message</li>
+    }
+}
+else
+{
+    <li>No new notifications</li>
+}
+
